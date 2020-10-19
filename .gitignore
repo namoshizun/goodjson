@@ -1,0 +1,16 @@
+db.sqlite3
+__pycache__
+.env
+*.pyc
+venv
+tmp
+*.pdf
+.DS_Store
+media
+.coverage
+.pip
+.vscode
+.cache
+log
+pyrightconfig.json
+*.egg-info
