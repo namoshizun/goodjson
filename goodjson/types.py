@@ -8,15 +8,14 @@ T = TypeVar('T')
 Number = Union[float, int]
 
 
+class ValueAndPath(TypedDict):
+    value: Any  # the JSON value that is causing problem
+    path: str  # JSON entries delimited by "$"
+
+
 class ValidationFail(TypedDict):
     error: ErrorMessage
-    # JSON entries delimited by "$", the last item is the troublesome data
-    location: Optional[str]
-
-
-class DataAndPath(TypedDict):
-    data: Any
-    path: str
+    data: ValueAndPath
 
 
 """
@@ -24,13 +23,13 @@ Two types of bool returns.
 1. Checker: same as boolean type, just true or false
 2. Informative Checker: a bit more useful and returns some second argument to provide contextual information
 
-Checker function simply takes some value and tells it meets some criteria or not
+Checker function simply takes some value and tells whether it meets some criteria or not
 """
 ChekerReturn = bool
 
-InformativeCheckerReturn = Tuple[bool, Optional[T]]
-
 CheckerFunction = Callable[..., ChekerReturn]
+
+InformativeCheckerReturn = Tuple[bool, Optional[T]]
 
 
 """

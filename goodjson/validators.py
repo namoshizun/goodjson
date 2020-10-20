@@ -1,10 +1,11 @@
 import re
 import operator
+from datetime import datetime
 from functools import partial
 from enum import Enum
 from typing import List, Tuple, Union, Dict, Any, Type, Set
 
-from goodjson import errors, exceptions, utils
+from goodjson import errors, exceptions, utils, ROOT_SYMBOL
 from goodjson.types import \
     Number, ChekerReturn, ValidatorFunction, ValidatorReturn
 from goodjson.decorators import validator
@@ -54,6 +55,17 @@ def is_type(types: Union[Type, Tuple[Type]], type_name: str) -> ValidatorFunctio
     @validator(errors.not_type.format(type=type_name))
     def inner(value: Any) -> ChekerReturn:
         return isinstance(value, utils.force_tuple(types))
+    return inner
+
+
+def is_datetime(pattern: str) -> ValidatorFunction:
+    @validator(errors.not_type.format(type=f'datetime string of pattern "{pattern}"'))
+    def inner(value: str) -> ChekerReturn:
+        try:
+            datetime.strptime(value, pattern)
+            return True
+        except (ValueError, TypeError):
+            return False
     return inner
 
 
@@ -140,28 +152,24 @@ def is_categorical(options: Union[Enum, List, Set], ignore_none=False) -> Valida
 def foreach(*validators: ValidatorFunction) -> ValidatorFunction:
     """
     Apply a sequence of validators to each element in a list or tuple.
-    Validation fail example:
-    {
-        "error": errors.has_na,
-        "location": "0$name"   <- the first dict at [name] entry
-    }
     """
     def inner(value: Union[List, Tuple]) -> ValidatorReturn:
         if type(value) not in (list, tuple):
             return False, {
                 'error': errors.not_type.format(type='list or tuple'),
-                'location': None
+                'data': {
+                    'path': '',
+                    'value': value
+                }
             }
 
         for idx, element in enumerate(value):
             try:
                 for validate_fn in validators:
                     ok, val_fail = validate_fn(element)
-
                     if not ok:
-                        loc = val_fail['location']
-                        new_loc_suffix = '' if not loc else '$' + loc
-                        val_fail['location'] = str(idx) + new_loc_suffix
+                        loc = val_fail['data']['path'].replace(ROOT_SYMBOL, '')
+                        val_fail['data']['path'] = ROOT_SYMBOL + '$' + str(idx) + loc
                         return ok, val_fail
             except exceptions.ValueNotRequired:
                 pass
@@ -172,17 +180,15 @@ def foreach(*validators: ValidatorFunction) -> ValidatorFunction:
 def foreach_key(OPTIONAL_KEYS=tuple(), **key_validators_pairs: List[ValidatorFunction]) -> ValidatorFunction:
     """
     For each key and its given validators, apply them to the corresponding value.
-    Validation fail example:
-    {
-        "error": errors.has_na,
-        "location": "user$name"  <- the [user][name] entry
-    }
     """
     def inner(value: Dict[str, Any]) -> ValidatorReturn:
         if not isinstance(value, dict):
             return False, {
                 'error': errors.not_type.format(type='dict'),
-                'location': None
+                'data': {
+                    'path': ROOT_SYMBOL,
+                    'value': value
+                }
             }
 
         for key, validators in key_validators_pairs.items():
@@ -191,7 +197,10 @@ def foreach_key(OPTIONAL_KEYS=tuple(), **key_validators_pairs: List[ValidatorFun
                 if key not in OPTIONAL_KEYS:
                     return False, {
                         'error': errors.not_found.format(object=key),
-                        'location': key
+                        'data': {
+                            'path': ROOT_SYMBOL,
+                            'value': value
+                        }
                     }
                 continue
 
@@ -200,9 +209,8 @@ def foreach_key(OPTIONAL_KEYS=tuple(), **key_validators_pairs: List[ValidatorFun
                 for validate_fn in validators:
                     ok, val_fail = validate_fn(value[key])
                     if not ok:
-                        loc = val_fail['location']
-                        new_loc_suffix = '' if not loc else '$' + loc
-                        val_fail['location'] = key + new_loc_suffix
+                        loc = val_fail['data']['path'].replace(ROOT_SYMBOL, '')
+                        val_fail['data']['path'] = ROOT_SYMBOL + '$' + key + loc
                         return ok, val_fail
 
             except exceptions.ValueNotRequired:
@@ -211,17 +219,17 @@ def foreach_key(OPTIONAL_KEYS=tuple(), **key_validators_pairs: List[ValidatorFun
     return inner
 
 
-def gj_any(*validators: ValidatorFunction) -> ValidatorFunction:
-    def inner(value: Any) -> ValidatorReturn:
-        some_ok = any(validate_fn(value)[0] for validate_fn in validators)
-        if not some_ok:
-            # FIXME
-            return False, {
-                'error': errors.unknown_error,
-                'location': value
-            }
-        return True, None
-    return inner
+# def gj_any(*validators: ValidatorFunction) -> ValidatorFunction:
+#     def inner(value: Any) -> ValidatorReturn:
+#         some_ok = any(validate_fn(value)[0] for validate_fn in validators)
+#         if not some_ok:
+#             # FIXME
+#             return False, {
+#                 'error': errors.unknown_error,
+#                 'location': value
+#             }
+#         return True, None
+#     return inner
 
 
 def gj_all(*validators: ValidatorFunction) -> ValidatorFunction:

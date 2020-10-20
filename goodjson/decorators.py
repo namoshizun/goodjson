@@ -1,4 +1,5 @@
 from typing import Any
+from goodjson import ROOT_SYMBOL
 from goodjson.errors import ErrorMessage
 from goodjson.types import CheckerFunction, ValidatorFunction, ValidatorReturn, ValidationFail
 
@@ -14,7 +15,10 @@ def validator(message: ErrorMessage):
             if not ok:
                 val_fail: ValidationFail = {
                     'error': message,
-                    'location': str(value)
+                    'data': {
+                        'path': ROOT_SYMBOL,
+                        'value': value
+                    }
                 }
             else:
                 val_fail = None

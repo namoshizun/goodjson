@@ -1,7 +1,7 @@
 from datetime import datetime
 from goodjson.validators import \
-    foreach, foreach_key, is_between, is_categorical, is_list, is_number, \
-    is_string, is_float, gj_all, is_integer
+    foreach, foreach_key, is_between, is_categorical, is_datetime, is_list, is_positive, \
+    is_string, is_float, is_integer, gj_all
 
 
 """
@@ -10,27 +10,27 @@ Example:
 Check a list of dicts by chaining `foreach` and `foreach_key` higher order validators
 """
 validate_fn = foreach_key(
-    users=[
+    files=[
         is_list(),
         foreach(foreach_key(
-            name=[is_string],
-            age=[is_number],
-            events=[
-                is_list(),
-                foreach(is_string)
-            ]
+            filename=[is_string],
+            extension=[is_categorical(['.pdf', '.txt'])],
+            lastModified=[is_datetime('%Y-%m-%d %H:%M:%S')],
+            size=[is_integer, is_positive],
+            urls=[foreach(is_string)]
         ))
     ]
 )
 
 print(validate_fn({
-    'users': [
+    'files': [
         {
-            'name': 'hehe',
-            'age': 30,
-            'events': [
-                'wake up',
-                'sleep'
+            'filename': 'news',
+            'extension': '.pdf',
+            'lastModified': '2012-05-18 20:00:05',
+            'size': 128,
+            'urls': [
+                'https://json.org/example.html'
             ]
         }
     ]
@@ -53,7 +53,7 @@ validate_fn = gj_all(
 matrix_arr = [
     [1., 2., 3., 4.],
     [1., 2., 3., 4.],
-    [1., 2., 3., 4.]
+    [1., 2., 3., 4., 6]
 ]
 
 print(validate_fn(matrix_arr))
