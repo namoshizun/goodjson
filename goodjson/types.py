@@ -25,9 +25,9 @@ Two types of bool returns.
 
 Checker function simply takes some value and tells whether it meets some criteria or not
 """
-ChekerReturn = bool
+CheckerReturn = bool
 
-CheckerFunction = Callable[..., ChekerReturn]
+CheckerFunction = Callable[..., CheckerReturn]
 
 InformativeCheckerReturn = Tuple[bool, Optional[T]]
 

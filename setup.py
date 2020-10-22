@@ -14,7 +14,7 @@ URL = 'https://github.com/namoshizun/goodjson'
 
 setup(
     name='goodjson',
-    version='0.0.1',
+    version='0.1.0',
     description=SHORT_DESCRIPTION,
     long_description=LONG_DESCRIPTION,
     url=URL,

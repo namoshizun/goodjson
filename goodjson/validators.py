@@ -7,31 +7,31 @@ from typing import List, Tuple, Union, Dict, Any, Type, Set
 
 from goodjson import errors, exceptions, utils, ROOT_SYMBOL
 from goodjson.types import \
-    Number, ChekerReturn, ValidatorFunction, ValidatorReturn
+    Number, CheckerReturn, ValidatorFunction, ValidatorReturn
 from goodjson.decorators import validator
 
 
 # ------------------------------
 # Not parameterizable validators
 @validator(errors.not_negative)
-def is_negative(number: Number) -> ChekerReturn:
+def is_negative(number: Number) -> CheckerReturn:
     return number < 0
 
 
 @validator(errors.not_positive)
-def is_positive(number: Number) -> ChekerReturn:
+def is_positive(number: Number) -> CheckerReturn:
     return number > 0
 
 
 @validator(errors.empty_value)
-def is_not_empty(value: Any) -> ChekerReturn:
+def is_not_empty(value: Any) -> CheckerReturn:
     if type(value) in (list, set, str):
         return bool(value)
     return value
 
 
 @validator(errors.unknown_error)
-def is_optional(value: Any) -> ChekerReturn:
+def is_optional(value: Any) -> CheckerReturn:
     """
     It is a rather special validator because it never returns False and emits an exception
     signal when the value is correct instead of returning True.
@@ -53,14 +53,14 @@ def is_uuid(value: str):
 # Parameterizable validators
 def is_type(types: Union[Type, Tuple[Type]], type_name: str) -> ValidatorFunction:
     @validator(errors.not_type.format(type=type_name))
-    def inner(value: Any) -> ChekerReturn:
+    def inner(value: Any) -> CheckerReturn:
         return isinstance(value, utils.force_tuple(types))
     return inner
 
 
 def is_datetime(pattern: str) -> ValidatorFunction:
     @validator(errors.not_type.format(type=f'datetime string of pattern "{pattern}"'))
-    def inner(value: str) -> ChekerReturn:
+    def inner(value: str) -> CheckerReturn:
         try:
             datetime.strptime(value, pattern)
             return True
@@ -81,7 +81,7 @@ def is_list(size=None) -> ValidatorFunction:
         type_name += f' of {size} elements'
 
     @validator(errors.not_type.format(type=type_name))
-    def inner(value: Any) -> ChekerReturn:
+    def inner(value: Any) -> CheckerReturn:
 
         if not isinstance(value, list):
             return False
@@ -96,7 +96,7 @@ def is_list(size=None) -> ValidatorFunction:
 
 def is_greater_than(min_val, inclusive=False) -> ValidatorFunction:
     @validator(errors.too_small.format(min=min_val))
-    def inner(number: Number) -> ChekerReturn:
+    def inner(number: Number) -> CheckerReturn:
         if inclusive:
             return number >= min_val
         return number > min_val
@@ -105,7 +105,7 @@ def is_greater_than(min_val, inclusive=False) -> ValidatorFunction:
 
 def is_less_than(max_val, inclusive=False) -> ValidatorFunction:
     @validator(errors.too_large.format(max=max_val))
-    def inner(number: Number) -> ChekerReturn:
+    def inner(number: Number) -> CheckerReturn:
         if inclusive:
             return number <= max_val
         return number < max_val
@@ -121,7 +121,7 @@ def is_between(min_val,
         include_min = include_max = True
 
     @validator(errors.out_of_range.format(min=min_val, max=max_val))
-    def inner(number: Number) -> ChekerReturn:
+    def inner(number: Number) -> CheckerReturn:
         min_check = operator.ge if include_min else operator.gt
         max_check = operator.le if include_max else operator.lt
         return min_check(number, min_val) and max_check(number, max_val)
@@ -140,7 +140,7 @@ def is_categorical(options: Union[Enum, List, Set], ignore_none=False) -> Valida
         raise TypeError(f'{options} is not Enum, List or Set')
 
     @validator(errors.not_allowed.format(options=acceptable_vals))
-    def inner(value: Any) -> ChekerReturn:
+    def inner(value: Any) -> CheckerReturn:
         if ignore_none and value is None:
             return True
         return value in acceptable_vals
@@ -217,19 +217,6 @@ def foreach_key(OPTIONAL_KEYS=tuple(), **key_validators_pairs: List[ValidatorFun
                 pass
         return True, None
     return inner
-
-
-# def gj_any(*validators: ValidatorFunction) -> ValidatorFunction:
-#     def inner(value: Any) -> ValidatorReturn:
-#         some_ok = any(validate_fn(value)[0] for validate_fn in validators)
-#         if not some_ok:
-#             # FIXME
-#             return False, {
-#                 'error': errors.unknown_error,
-#                 'location': value
-#             }
-#         return True, None
-#     return inner
 
 
 def gj_all(*validators: ValidatorFunction) -> ValidatorFunction:
