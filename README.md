@@ -14,19 +14,21 @@ TODO
 TODO
 
 ```python
-from goodjson import errors, types, decorators
+from goodjson.errors import ErrorMessage
+from goodjson.types import ValidatorFunction, CheckerReturn
+from goodjson.decorators import validator
 from goodjson.validators import foreach_key, foreach, is_string, is_list
 
 # Build own validator with custom error message
-prefix_not_found = errors.ErrorMessage(
+prefix_not_found = ErrorMessage(
     name='prefix_not_found',
     description='Expected prefix {prefix} is not found'
 )
 
-def has_prefix_value(begin_value: str) -> types.ValidatorFunction:
+def has_prefix_value(begin_value: str) -> ValidatorFunction:
 
-    @decorators.validator(prefix_not_found.format(prefix=begin_value))
-    def checker(value: str) -> types.CheckerReturn:
+    @validator(prefix_not_found.format(prefix=begin_value))
+    def checker(value: str) -> CheckerReturn:
         # ...
         # DO WHATEVER YOU WANT!
         return value.startswith(begin_value)
