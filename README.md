@@ -8,12 +8,12 @@ Coming up in v0.2.0
 
 ## Installation
 * Require Python >= 3.6.
-* Install from GitHub: pip install git+https://github.com/namoshizun/goodjson.git@master
+* Install from GitHub: `pip install git+https://github.com/namoshizun/goodjson.git@master`
 
 
 ## Usage
 #### Validator Function
-A GoodJSON validator is a function with signature `Callable[..., Tuple[bool, ValidationFail]]`. It takes any data and returns True/False based on the validity of the data, and a `ValidationFail` object to tell exactly what data failed to meet which requirement. Each validator must accompany en `ErrorMessage`. For example, we can create a parameterizable validator that checks string prefix like below:
+A GoodJSON validator is a function with signature `Callable[..., Tuple[bool, ValidationFail]]`. It takes any data and returns True/False based its validity, and a `ValidationFail` object to tell exactly what value failed to meet which requirement. Each validator must accompany an `ErrorMessage`. For example, we can create a parameterizable validator that checks string prefix like below:
 
 ```python
 from goodjson.errors import ErrorMessage
@@ -39,7 +39,9 @@ def has_prefix_value(begin_value: str) -> ValidatorFunction:
 
 ok, val_fail = has_prefix_value('GJ')('__notGood!')
 """
-Expect "val_fail" to be printed as the following. "path" is a dollar-sign demilited string for finding the value having the error. Every "path" always starts with "_root_" indicating the validator's input data itself.
+Expect "val_fail" to be printed as the following.
+"path" is a dollar-sign demilited string pointing where the erroneous value is at.
+Every "path" always starts with "_root_" representing the validator's input data itself.
 
 {
     'error': 'Expected prefix GJ is not found',

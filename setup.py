@@ -4,7 +4,7 @@ from setuptools import setup
 LONG_DESCRIPTION = open('README.md').read().strip()
 
 SHORT_DESCRIPTION = """
-Functional validators to check anything about your JSON with ease.""".strip()
+Compose functional validators to check anything about your JSON with ease.""".strip()
 
 REQUIREMENTS = list(map(str.strip, filter(bool, open('requirements.txt').readlines())))
 TEST_REQUIREMENTS = list(map(str.strip, filter(bool, open('requirements.test.txt').readlines())))
