@@ -51,7 +51,7 @@ def is_uuid(value: str):
 
 # --------------------------
 # Parameterizable validators
-def is_type(types: Union[Type, Tuple[Type]], type_name: str) -> ValidatorFunction:
+def is_of_type(types: Union[Type, Tuple[Type]], type_name: str) -> ValidatorFunction:
     @validator(errors.not_type.format(type=type_name))
     def inner(value: Any) -> CheckerReturn:
         return isinstance(value, utils.force_tuple(types))
@@ -231,12 +231,12 @@ def gj_all(*validators: ValidatorFunction) -> ValidatorFunction:
 
 # ----------
 # Shorthands
-is_string = is_type(str, 'text')
-is_integer = is_type(int, 'integer')
-is_float = is_type(float, 'decimal number')
-is_boolean = is_type(bool, 'boolean')
-is_null = is_type(type(None), 'null')
-is_number = is_type((int, float), 'number')
+is_string = is_of_type(str, 'text')
+is_integer = is_of_type(int, 'integer')
+is_float = is_of_type(float, 'decimal number')
+is_boolean = is_of_type(bool, 'boolean')
+is_null = is_of_type(type(None), 'null')
+is_number = is_of_type((int, float), 'number')
 
 is_gte = partial(is_greater_than, inclusive=True)
 is_lte = partial(is_less_than, inclusive=True)
