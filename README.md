@@ -8,7 +8,7 @@ Coming up in v0.2.0
 
 ## Installation
 * Require Python >= 3.6.
-* Install from GitHub: `pip install git+https://github.com/namoshizun/goodjson.git@master`
+* Install from GitHub: `pip install git+https://github.com/namoshizun/goodjson.git@main`
 
 
 ## Usage
