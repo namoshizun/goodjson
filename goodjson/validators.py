@@ -1,5 +1,6 @@
 import re
 import operator
+import validators as validators_util
 from datetime import datetime
 from functools import partial
 from enum import Enum
@@ -47,6 +48,16 @@ def is_optional(value: Any) -> CheckerReturn:
 def is_uuid(value: str):
     UUID_REGEX = r'^[0-9a-fA-F]{8}\b-[0-9a-fA-F]{4}\b-[0-9a-fA-F]{4}\b-[0-9a-fA-F]{4}\b-[0-9a-fA-F]{12}$'
     return bool(re.match(UUID_REGEX, value))
+
+
+@validator(errors.not_type.format(type='URI'))
+def is_uri(value: str):
+    return isinstance(value, str) and validators_util.url(value) is True
+
+
+@validator(errors.not_type.format(type='email'))
+def is_email(value: str):
+    return isinstance(value, str) and validators_util.email(value) is True
 
 
 # --------------------------
@@ -237,6 +248,7 @@ is_float = is_of_type(float, 'decimal number')
 is_boolean = is_of_type(bool, 'boolean')
 is_null = is_of_type(type(None), 'null')
 is_number = is_of_type((int, float), 'number')
+is_dict = is_of_type(dict, 'dictionary')
 
 is_gte = partial(is_greater_than, inclusive=True)
 is_lte = partial(is_less_than, inclusive=True)
